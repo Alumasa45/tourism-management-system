@@ -174,7 +174,7 @@ export class UsersService {
   //Generation of tickets for issues.
   async generateTicket(
     user_id: number,
-    CreateTicketDto: CreateTicketDto,
+    createTicketDto: CreateTicketDto,
   ): Promise<{ ticket_id: number; message: string }> {
     try {
       const user = await this.findOne(user_id);
@@ -184,14 +184,10 @@ export class UsersService {
         );
       }
 
+      // Only use the properties that are actually defined in CreateTicketDto
       const ticket = {
-        ticket_id: CreateTicketDto.ticket_id,
-        user_id: CreateTicketDto.user_id,
-        booking_id: CreateTicketDto.booking_id,
-        issue_description: CreateTicketDto.issue_description,
-        ticket_status: CreateTicketDto.ticket_status,
-        created_at: CreateTicketDto.created_at,
-        resolved_at: CreateTicketDto.resolved_at,
+        booking_id: createTicketDto.booking_id,
+        issue_description: createTicketDto.issue_description,
       };
 
       const mockTicketId = Math.floor(Math.random() * 10000);

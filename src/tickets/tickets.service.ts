@@ -1,77 +1,95 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-// import { CreateUserDto } from './dto/create-user.dto';
 import { CreateBookingDto } from 'src/bookings/dto/create-booking.dto';
 import { Ticket, ticket_status } from './entities/ticket.entity';
-
-export interface ticket {
-    ticket_id: number;
-  user_id?: number;
-  booking_id?: number;
-  issue_description: string;
-  ticket_status: 'open' | 'closed' | 'resolved';
-  created_at: Date;
-  resolved_at: Date;
-}
 
 @Injectable()
 export class TicketsService {
   constructor(
     @InjectRepository(Ticket)
-  private readonly ticketRepository: Repository<ticket>,
+    private readonly ticketRepository: Repository<Ticket>,
   ) {}
 
-  //Creation of tickets.
-  async create(createTicketDto: CreateTicketDto): Promise<any> {
+  // Get all tickets
+  async findAll(): Promise<Ticket[]> {
     try {
-      const existingBooking = await this.findById(CreateBookingDto.booking_id);
-      if (!existingBooking) {
-        throw new NotFoundException('Booking not found, please generate a booking first.'),
+      return await this.ticketRepository.find();
+    } catch (error) {
+      throw new NotFoundException(`Error finding tickets: ${error.message}`);
+    }
+  }
+
+  // Get one ticket
+  async findOne(id: number): Promise<Ticket> {
+    try {
+      const ticket = await this.ticketRepository.findOne({
+        where: { ticket_id: id },
+      });
+      if (!ticket) {
+        throw new NotFoundException(`Ticket with ID ${id} not found`);
+      }
+      return ticket;
+    } catch (error) {
+      throw new NotFoundException(`Error finding ticket: ${error.message}`);
+    }
+  }
+
+  // Creation of tickets
+  async create(
+    createTicketDto: CreateTicketDto,
+  ): Promise<{ ticket_id: number; message: string }> {
+    try {
+      if (!createTicketDto.booking_id) {
+        throw new NotFoundException('Booking ID is required');
       }
 
-      const Ticket = {
-        ticket_id: createTicketDto.ticket_id,
-        user_id: createTicketDto.user_id,
-        booking_id: createTicketDto.booking_id,
+      // Verify if the booking exists (this would typically call a booking service)
+      // For now we'll just check if booking_id is provided
+      const newTicket = this.ticketRepository.create({
         issue_description: createTicketDto.issue_description,
-        ticket_status: createTicketDto.ticket_status,
-        created_at: createTicketDto.created_at,
-        resolved_at: createTicketDto.resolved_at,
-      };
+        ticket_status: ticket_status.Open,
+        created_at: new Date(),
+        resolved_at: null,
+        booking_id: createTicketDto.booking_id,
+      });
 
-      const mockTicketId = Math.floor(Math.random() * 10000);
-
+      const savedTicket = await this.ticketRepository.save(newTicket);
       return {
-        ticket_id: mockTicketId,
-        message: 'Generating ticket...'
-    };
-  } catch (error) {
-    throw new NotFoundException(`Could not generate ticket: ${error.message}`);
+        ticket_id: savedTicket.ticket_id,
+        message: 'Ticket generated successfully',
+      };
+    } catch (error) {
+      throw new NotFoundException(
+        `Could not generate ticket: ${error.message}`,
+      );
+    }
   }
+
+  // Update a ticket
+  async update(id: number, updateTicketDto: UpdateTicketDto): Promise<Ticket> {
+    try {
+      const ticket = await this.findOne(id);
+      const updatedTicket = Object.assign(ticket, updateTicketDto);
+      return await this.ticketRepository.save(updatedTicket);
+    } catch (error) {
+      throw new NotFoundException(`Error updating ticket: ${error.message}`);
+    }
   }
-  // async findAll(
-  //   ): Promise<any> {
-  //   try {
-  //     const tickets = await this.ticketRepository.find();
-  //     return tickets;
-  //   } catch (error) {
-  //     throw new NotFoundException(`Could not find tickets: ${error.message}`);
-  //   }
-  // }
-  
 
-//   findOne(id: number) {
-//     return `This action returns a #${id} ticket`;
-//   }
-
-//   update(id: number, updateTicketDto: UpdateTicketDto) {
-//     return `This action updates a #${id} ticket`;
-//   }
-
-//   remove(id: number) {
-//     return `This action removes a #${id} ticket`;
-//   }
-// }
+  // Remove a ticket
+  async remove(id: number): Promise<void> {
+    try {
+      const ticket = await this.findOne(id);
+      await this.ticketRepository.remove(ticket);
+    } catch (error) {
+      throw new NotFoundException(`Error removing ticket: ${error.message}`);
+    }
+  }
+}

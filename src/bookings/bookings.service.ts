@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
-import { Booking } from './entities/booking.entity';
+import { Booking, BookingStatus } from './entities/booking.entity';
 
 @Injectable()
 export class BookingsService {
@@ -16,28 +16,22 @@ export class BookingsService {
     private readonly bookingRepository: Repository<Booking>,
   ) {}
 
-  // async create(createBookingDto: CreateBookingDto): Promise<Booking> {
-  //   try {
-  // Fix: Pass the DTO directly or map properties correctly
-  // const booking: Booking = this.bookingRepository.create({
-  //   ...createBookingDto,
-  //   booking_date: new Date(createBookingDto.booking_date),
-  //   status: createBookingDto.status || 'pending',
-  // });
-  // try {
-  //   const booking: Booking =  this.bookingRepository.create({
-  //     booking_id: createBookingDto.booking_id,
-  //     user_id: createBookingDto.user_id,
-  //     package_id: createBookingDto.package_id,
-  //     booking_date: new Date(createBookingDto.booking_date),
-  //     status: createBookingDto.status || 'pending',
-  //   });
+  async create(createBookingDto: CreateBookingDto): Promise<Booking> {
+    try {
+      // Use the BookingStatus enum directly since DTO now uses it
+      const bookingStatus = createBookingDto.status || BookingStatus.Pending;
 
-  //     return await this.bookingRepository.save(Booking);
-  //   } catch (error) {
-  //     throw new BadRequestException('Failed to create booking!');
-  //   }
-  // }
+      const booking: Booking = this.bookingRepository.create({
+        ...createBookingDto,
+        booking_date: new Date(createBookingDto.booking_date),
+        status: bookingStatus,
+      });
+
+      return await this.bookingRepository.save(booking);
+    } catch (error) {
+      throw new BadRequestException('Failed to create booking!');
+    }
+  }
 
   async findAll(
     page: number = 1,
@@ -106,13 +100,19 @@ export class BookingsService {
     updateBookingDto: UpdateBookingDto,
   ): Promise<Booking> {
     const booking = await this.findOne(id);
-    // how user status changes.
+
     if (updateBookingDto.status) {
-      const validTransitions = {
-        pending: ['confirmed', 'cancelled'],
-        confirmed: ['completed', 'cancelled'],
-        cancelled: [],
-        completed: [],
+      const validTransitions: Record<BookingStatus, BookingStatus[]> = {
+        [BookingStatus.Pending]: [
+          BookingStatus.Confirmed,
+          BookingStatus.Cancelled,
+        ],
+        [BookingStatus.Confirmed]: [
+          BookingStatus.Completed,
+          BookingStatus.Cancelled,
+        ],
+        [BookingStatus.Cancelled]: [],
+        [BookingStatus.Completed]: [],
       };
 
       if (
@@ -124,26 +124,25 @@ export class BookingsService {
       }
     }
 
-    return booking; // Return the updated booking object.
+    Object.assign(booking, updateBookingDto);
+    return await this.bookingRepository.save(booking);
   }
 
-  //update by ststus.
-  async updateStatus(
-    id: number,
-    status: UpdateBookingDto['status'],
-  ): Promise<Booking> {
+  async updateStatus(id: number, status: BookingStatus): Promise<Booking> {
     return await this.update(id, { status });
   }
 
   async remove(id: number): Promise<{ message: string }> {
     const booking = await this.findOne(id);
 
-    if (!['pending', 'cancelled'].includes(booking.status)) {
+    if (
+      ![BookingStatus.Pending, BookingStatus.Cancelled].includes(booking.status)
+    ) {
       throw new BadRequestException(
         'Cannot delete a confirmed or completed booking',
       );
     }
     await this.bookingRepository.delete(id);
-    return { message: 'Booking deleted succesfully!' };
+    return { message: 'Booking deleted successfully!' };
   }
 }

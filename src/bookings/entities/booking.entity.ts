@@ -9,10 +9,11 @@ import {
 import { TourPackage } from '../../tour_packages/entities/tour_package.entity';
 import { User } from '../../users/entities/user.entity';
 
-export enum status {
-  Confirmed = 'Confirmed',
-  Cancelled = 'Cancelled',
-  Pending = 'Pending',
+export enum BookingStatus {
+  Confirmed = 'confirmed',
+  Cancelled = 'cancelled',
+  Pending = 'pending',
+  Completed = 'completed',
 }
 @Entity()
 export class Booking {
@@ -25,8 +26,8 @@ export class Booking {
   @Column({ type: 'date', nullable: false })
   booking_date: Date;
 
-  @Column({ type: 'enum', enum: status, default: status.Pending })
-  status: status;
+  @Column({ type: 'enum', enum: BookingStatus, default: BookingStatus.Pending })
+  status: BookingStatus;
 
   @ManyToOne(() => TourPackage, (pkg) => pkg.bookings)
   @JoinColumn({ name: 'package_id' })

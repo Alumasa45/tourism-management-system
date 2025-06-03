@@ -28,12 +28,15 @@ export class Ticket {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  resolved_at: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  resolved_at: Date | null;
 
   @OneToMany(() => User, (user: User) => user.tickets)
   users: Relation<User[]>;
   @ManyToOne(() => User, (user) => user.tickets, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ type: 'int', nullable: false })
+  booking_id: number;
 }
