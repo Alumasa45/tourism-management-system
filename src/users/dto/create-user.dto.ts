@@ -1,10 +1,12 @@
+import { status } from '../entities/user.entity';
+
 export class CreateUserDto {
-  user_id?: number;
+  User_id?: number;
   email: string;
   password?: string;
   first_name: string;
   last_name: string;
-  status: 'active' | 'inactive';
+  status: status;
   phone_number: string;
   last_login?: Date;
 }

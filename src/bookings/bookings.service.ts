@@ -18,7 +18,6 @@ export class BookingsService {
 
   async create(createBookingDto: CreateBookingDto): Promise<Booking> {
     try {
-      // Use the BookingStatus enum directly since DTO now uses it
       const bookingStatus = createBookingDto.status || BookingStatus.Pending;
 
       const booking: Booking = this.bookingRepository.create({
@@ -32,7 +31,7 @@ export class BookingsService {
       throw new BadRequestException('Failed to create booking!');
     }
   }
-
+  // Pagination Implementation.
   async findAll(
     page: number = 1,
     limit: number = 10,
@@ -68,7 +67,7 @@ export class BookingsService {
     }
     return booking;
   }
-
+  //Pagination Implementation.
   async findByUserId(
     user_id: number,
     page: number = 1,

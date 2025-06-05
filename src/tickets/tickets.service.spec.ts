@@ -45,7 +45,7 @@ describe('TicketsService', () => {
         resolved_at: null,
         users: [],
         user: null,
-        booking_id: 1
+        booking_id: 1,
       };
 
       mockRepository.findOne.mockResolvedValue(mockTicket);
@@ -79,7 +79,7 @@ describe('TicketsService', () => {
         resolved_at: null,
         users: [],
         user: null,
-        booking_id: createTicketDto.booking_id
+        booking_id: createTicketDto.booking_id,
       };
 
       mockRepository.create.mockReturnValue(mockTicket);
@@ -96,7 +96,7 @@ describe('TicketsService', () => {
         ticket_status: ticket_status.Open,
         created_at: expect.any(Date),
         resolved_at: null,
-        booking_id: createTicketDto.booking_id
+        booking_id: createTicketDto.booking_id,
       });
     });
 

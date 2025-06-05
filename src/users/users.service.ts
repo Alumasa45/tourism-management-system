@@ -12,17 +12,18 @@ import { CreateBookingDto } from 'src/bookings/dto/create-booking.dto';
 import { CreateTicketDto } from 'src/tickets/dto/create-ticket.dto';
 import { CreateInquiryDto } from 'src/inquiries/dto/create-inquiry.dto';
 import { JwtService } from '@nestjs/jwt';
-import { User } from './entities/user.entity';
+import { User, status } from './entities/user.entity';
 
 export interface tourist {
-  user_id?: number;
+  User_id?: number;
   email: string;
   password?: string;
   first_name: string;
   last_name: string;
-  status: 'active' | 'inactive';
+  status: status;
   phone_number: string;
   last_login?: Date;
+  user_id?: number;
 }
 
 export interface booking {
@@ -37,7 +38,7 @@ export interface booking {
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<tourist>,
+    private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -56,33 +57,24 @@ export class UsersService {
         saltRounds,
       );
 
-      // 🛑🛑🛑Saving new user to the database.
-      // const savedUser = await this.userRepository.save({
-      //   ...createUserDto,
-      //   password: hashedPassword,
-      //   status: 'active'
-      // });
-
-      // For now, just return a mock object as savedUser.
-      const savedUser = {
+      // Saving new user to the database.
+      const savedUser = await this.userRepository.save({
         ...createUserDto,
         password: hashedPassword,
-        status: 'active',
-      };
+        status: status.Active,
+        last_login: new Date().toISOString().split('T')[0], // Convert Date to string format.
+      });
 
       // Generation of the JWT token.
-      // 🛑🛑 Replace 'this.service' with the correct JwtService instance if needed.
-      const payload = { sub: savedUser.user_id, email: savedUser.email };
-      // const token = this.jwtService.sign(payload); // Uncomment and inject JwtService to use this.
-      // return {
-      //   token,
-      //   savedUser
-      // };
-      // return savedUser;
+      const payload = { sub: savedUser.User_id, email: savedUser.email };
+      const token = this.jwtService.sign(payload);
 
       // Remove password before returning user object.
       const { password, ...userWithoutPassword } = savedUser;
-      return userWithoutPassword;
+      return {
+        token,
+        user: userWithoutPassword,
+      };
     } catch (error) {
       throw new Error(`Registration failed: ${error.message}`);
     }
@@ -108,20 +100,6 @@ export class UsersService {
     }
   }
 
-  //   //Update a user.
-  //   async update(user_id: number, updateUserDto: UpdateUserDto): Promise<any>
-  //   try {
-  //     const user = await this.findOne(User_id);
-  //     if(!user) {
-  //       throw new Error('User not found!');
-  //     }
-  //     const updatedUser = await this.update(user_id, updateUserDto);
-  //     return updatedUser;
-  //   } catch (error) {
-  //     throw new Error(`Update failed: ${error.message}`);
-  //   }
-  // }
-
   // Book a Tour.
   async Booking(
     user_id: number,
@@ -129,7 +107,7 @@ export class UsersService {
   ): Promise<any> {
     try {
       const user = await this.findOne(user_id);
-      if (user.status !== 'active') {
+      if (user.status !== status.Active) {
         throw new UnauthorizedException(
           'User account is inactive! Please re-register. ',
         );
@@ -154,23 +132,41 @@ export class UsersService {
     }
   }
 
-  // Placeholder for findOne method
-  async findOne(id: number): Promise<tourist> {
-    //  Replace these with actual DB lookup. ***🛑🛑
-    return {
-      user_id: id,
-      email: 'quin@example.com',
-      first_name: 'quin',
-      last_name: 'test',
-      status: 'active',
-      phone_number: '0711111111',
-    };
+  async findOne(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { User_id: id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
   }
 
-  async findAll(id: number): Promise<tourist[]> {
-    return this.userRepository.find({ where: { user_id: id } });
+  async findAll(id: number): Promise<User[]> {
+    return this.userRepository.find({ where: { User_id: id } });
   }
 
+  async findAllUsers(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    // Create a clean update object
+    const updateData: any = { ...updateUserDto };
+
+    // Convert string status to enum if it exists in the DTO
+    if (updateData.status === 'active') {
+      updateData.status = status.Active;
+    } else if (updateData.status === 'inactive') {
+      updateData.status = status.InActive;
+    }
+
+    await this.userRepository.update({ User_id: id }, updateData);
+    return this.findOne(id);
+  }
   //Generation of tickets for issues.
   async generateTicket(
     user_id: number,
@@ -178,7 +174,7 @@ export class UsersService {
   ): Promise<{ ticket_id: number; message: string }> {
     try {
       const user = await this.findOne(user_id);
-      if (user.status !== 'active') {
+      if (user.status !== status.Active) {
         throw new UnauthorizedException(
           'User account is inactive! Please re-register. ',
         );
@@ -295,8 +291,8 @@ export class UsersService {
     }
   }
 
-  // Private helper methods
-  private async findByEmail(email: string): Promise<tourist | null> {
+  // Helper methods
+  async findByEmail(email: string): Promise<User | null> {
     return await this.userRepository.findOne({ where: { email } });
   }
 
@@ -307,8 +303,20 @@ export class UsersService {
       if (!user) {
         throw new Error('User not found!');
       }
-      // Update user in the repository (replace with actual update logic)
-      await this.userRepository.update(user_id, updateUserDto);
+
+      const updateData: any = { ...updateUserDto };
+
+      // Convert string status to enum
+      if (typeof updateData.status === 'string') {
+        if (updateData.status.toLowerCase() === 'active') {
+          updateData.status = status.Active;
+        } else if (updateData.status.toLowerCase() === 'inactive') {
+          updateData.status = status.InActive;
+        }
+      }
+
+      // Update user in the repository
+      await this.userRepository.update({ User_id: user_id }, updateData);
       const updatedUser = await this.findOne(user_id);
       return updatedUser;
     } catch (error) {
@@ -323,14 +331,17 @@ export class UsersService {
       if (!user) {
         throw new Error('User not found!');
       }
-      // Delete user from the repository (replace with actual delete logic)
-      await this.userRepository.delete(user_id);
+      // Delete user from the repository.
+      await this.userRepository.delete({ User_id: user_id });
       return { message: 'User deleted successfully' };
     } catch (error) {
       throw new Error(`Delete failed: ${error.message}`);
     }
   }
   private async updateLastLogin(userId: number): Promise<void> {
-    await this.userRepository.update(userId, { last_login: new Date() });
+    await this.userRepository.update(
+      { User_id: userId },
+      { last_login: new Date().toISOString().split('T')[0] },
+    );
   }
 }
