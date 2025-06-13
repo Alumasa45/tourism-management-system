@@ -22,8 +22,7 @@ export class TourPackagesService {
 
   async create(createTourPackageDto: CreateTourPackageDto) {
     try {
-      const tourPackage: TourPackage =
-        this.tourPackageRepository.create(createTourPackageDto);
+      const tourPackage: TourPackage = this.tourPackageRepository.create(createTourPackageDto);
       const savedPackage = await this.tourPackageRepository.save(tourPackage);
       // Invalidate the cache for tour packages list
       await this.cacheManager.del('all_tour_packages');

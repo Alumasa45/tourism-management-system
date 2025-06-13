@@ -13,7 +13,7 @@ import { TourPackagesService } from './tour_packages.service';
 import { CreateTourPackageDto } from './dto/create-tour_package.dto';
 import { UpdateTourPackageDto } from './dto/update-tour_package.dto';
 
-@ApiTags('Tour Packages')
+@ApiTags('tour-packages')
 @Controller('tour-packages')
 export class TourPackagesController {
   constructor(private readonly tourPackagesService: TourPackagesService) {}

@@ -30,10 +30,10 @@ export class Booking {
   @Column({ type: 'date', nullable: false })
   booking_date: Date;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Current status of the booking',
     enum: BookingStatus,
-    default: BookingStatus.Pending
+    default: BookingStatus.Pending,
   })
   @Column({ type: 'enum', enum: BookingStatus, default: BookingStatus.Pending })
   status: BookingStatus;

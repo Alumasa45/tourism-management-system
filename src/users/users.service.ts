@@ -13,7 +13,7 @@ import { CreateTicketDto } from 'src/tickets/dto/create-ticket.dto';
 import { CreateInquiryDto } from 'src/inquiries/dto/create-inquiry.dto';
 import { JwtService } from '@nestjs/jwt';
 import { User, status } from './entities/user.entity';
-
+import { Public } from '../auth/decorators/public.decorator';
 export interface tourist {
   User_id?: number;
   email: string;
@@ -44,6 +44,8 @@ export class UsersService {
 
   // User registration.
   async create(createUserDto: CreateUserDto): Promise<any> {
+    const { email, password, first_name, last_name, status, phone_number } =
+      createUserDto;
     try {
       const existingUser = await this.findByEmail(createUserDto.email);
       if (existingUser) {
@@ -58,22 +60,31 @@ export class UsersService {
       );
 
       // Saving new user to the database.
-      const savedUser = await this.userRepository.save({
+      const user = await this.userRepository.create({
         ...createUserDto,
         password: hashedPassword,
-        status: status.Active,
+        status: status,
         last_login: new Date().toISOString().split('T')[0], // Convert Date to string format.
       });
+      const savedUser = await this.userRepository.save(user)
 
       // Generation of the JWT token.
       const payload = { sub: savedUser.User_id, email: savedUser.email };
-      const token = this.jwtService.sign(payload);
+      const accessToken = this.jwtService.sign(payload, {
+  secret: process.env.JWT_ACCESS_TOKEN_SECRET || 'your-secret-key',
+  expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME || '1h',
+});
+
+const refreshToken = this.jwtService.sign(payload, {
+  secret: process.env.JWT_REFRESH_TOKEN_SECRET || 'your-refresh-secret-key',
+  expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME || '7d',
+});
 
       // Remove password before returning user object.
       const { password, ...userWithoutPassword } = savedUser;
       return {
-        token,
-        user: userWithoutPassword,
+        accessToken,
+        refreshToken,
       };
     } catch (error) {
       throw new Error(`Registration failed: ${error.message}`);

@@ -6,10 +6,13 @@ import {
   ManyToOne,
   JoinColumn,
   Relation,
+  OneToOne,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Booking } from '../../bookings/entities/booking.entity';
 import { Ticket } from '../../tickets/entities/ticket.entity';
+import { Profile } from 'src/profiles/entities/profile.entity';
+import { Inquiry } from 'src/inquiries/entities/inquiry.entity';
 
 export enum status {
   Active = 'Active',
@@ -19,10 +22,10 @@ export enum status {
 export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
-  GUIDE = 'guide',
+  GUEST = 'guest',
 }
 
-@Entity('Users')
+@Entity('users')
 export class User {
   @ApiProperty({ description: 'Unique user identifier' })
   @PrimaryGeneratedColumn({ type: 'int' })
@@ -44,18 +47,18 @@ export class User {
   @Column({ type: 'varchar', nullable: false })
   last_name: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'User account status',
     enum: status,
-    default: status.Active
+    default: status.Active,
   })
   @Column({ type: 'enum', enum: status, default: status.Active })
   status: status;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'User role in the system',
     enum: UserRole,
-    default: UserRole.USER
+    default: UserRole.USER,
   })
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
@@ -65,8 +68,11 @@ export class User {
   phone_number: string;
 
   @ApiProperty({ description: 'Last login date' })
-  @Column({ type: 'date', default: new Date() })
-  last_login: string;
+  @Column({ type: 'timestamp', default: new Date(), nullable: true })
+  last_login: Date;
+
+  @Column({ nullable: true})
+  hashedRefreshToken?: string;
 
   @OneToMany(() => Booking, (booking: Booking) => booking.user)
   bookings: Relation<Booking[]>;
@@ -75,7 +81,14 @@ export class User {
   tickets: Relation<Ticket[]>;
 
   @ManyToOne(() => User, (user: User) => user.bookings)
+  @JoinColumn({ name: 'User_id' })
   parent: Relation<User>;
+  
+  @OneToOne(() => Profile, (profile: Profile) => profile.user)
+  profile: Relation<User>;
+
+  @OneToMany(() => Inquiry, (inquiry: Inquiry) => inquiry.user)
+  inquiries: Relation<User[]>;
 
   @JoinColumn({ name: 'User_id' })
   parent_id: number;

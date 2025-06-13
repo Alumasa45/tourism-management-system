@@ -4,6 +4,7 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { User } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { ProfilesModule } from 'src/profiles/profiles.module';
 
 @Module({
   imports: [
@@ -12,9 +13,10 @@ import { JwtModule } from '@nestjs/jwt';
       secret: 'your-secret-key',
       signOptions: { expiresIn: '1h' },
     }),
+    ProfilesModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService],
+  exports: [UsersService, UsersModule],
 })
 export class UsersModule {}

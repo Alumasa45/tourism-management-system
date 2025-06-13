@@ -1,6 +1,12 @@
 import { BookingStatus } from '../entities/booking.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsDate, IsEnum, IsOptional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsDate,
+  IsEnum,
+  IsOptional,
+} from 'class-validator';
 
 export class CreateBookingDto {
   @ApiProperty({ description: 'Booking ID' })
@@ -21,10 +27,10 @@ export class CreateBookingDto {
   @IsDate()
   booking_date: Date;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     description: 'Booking status',
     enum: BookingStatus,
-    default: BookingStatus.Pending
+    default: BookingStatus.Pending,
   })
   @IsEnum(BookingStatus)
   @IsOptional()

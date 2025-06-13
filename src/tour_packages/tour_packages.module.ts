@@ -6,10 +6,7 @@ import { TourPackage } from './entities/tour_package.entity';
 import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([TourPackage]),
-    CacheModule.register()
-  ],
+  imports: [TypeOrmModule.forFeature([TourPackage]), CacheModule.register()],
   controllers: [TourPackagesController],
   providers: [TourPackagesService],
 })

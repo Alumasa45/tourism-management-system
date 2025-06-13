@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module,MiddlewareConsumer,NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-
+import { LoggerMiddleware } from './logger.middleware';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { InquiriesModule } from './inquiries/inquiries.module';
@@ -10,41 +10,42 @@ import { TicketsModule } from './tickets/tickets.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { UsersModule } from './users/users.module';
 import { SeedModule } from './seed/seed.module';
-import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { AdminsModule } from './admins/admins.module';
 import { AdminLogsModule } from './admin_logs/admin_logs.module';
 import { ConfigService } from '@nestjs/config';
-//import { redisStore } from 'cache-manager-redis-store';
+import { redisStore } from 'cache-manager-redis-store';
+import { ProfilesModule } from './profiles/profiles.module';
+import { GuestUsersModule } from './guest_users/guest_users.module';
+import { LogsModule } from './logs/logs.module';
+import { SeedModule } from './seed/seed.module';
+
+
 
 @Module({
   imports: [
-    NestCacheModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        //store: redisStore,
-        host: configService.get('REDIS_HOST', 'localhost'),
-        port: configService.get('REDIS_PORT', 6379),
-        ttl: configService.get('CACHE_TTL', 60 * 60),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '../.env'}),
+       InquiriesModule, TourPackagesModule, 
+      TicketsModule, BookingsModule, UsersModule, SeedModule, AdminsModule, 
+      ProfilesModule, GuestUsersModule, LogsModule, AuthModule,
+      CacheModule.registerAsync({
+      useFactory: async () => ({
+        store: redisStore,
+        host: 'localhost',
+        port: 6379,
       }),
-      inject: [ConfigService],
     }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
-    AuthModule,
-    UsersModule,
-    BookingsModule,
-    TicketsModule,
-    DatabaseModule,
-    TourPackagesModule,
-    InquiriesModule,
-    SeedModule,
-    AdminsModule,
-    AdminLogsModule,
-  ],
+    ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+
+
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes('admins', 'bookings', 'guest_users', 'inquiries', 'profiles', 'tickets', 'tour_packages', 'users');
+  }
+}

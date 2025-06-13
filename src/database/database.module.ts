@@ -26,7 +26,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
             ),
             entities: [__dirname + '/../**/*.entity{.ts,.js}'],
             synchronize: configService.get<boolean>('DB_SYNC', true),
-            logging: configService.get<boolean>('DB_LOGGING', false),
+            logging: configService.get<boolean>('DB_LOGGING', true),
           };
           logger.log('Successfully loaded database config');
           return config;
