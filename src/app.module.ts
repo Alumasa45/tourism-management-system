@@ -9,7 +9,6 @@ import { DatabaseModule } from './database/database.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { UsersModule } from './users/users.module';
-import { SeedModule } from './seed/seed.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { AdminsModule } from './admins/admins.module';
