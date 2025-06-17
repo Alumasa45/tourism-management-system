@@ -9,7 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { UsersModule } from './users/users.module';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { AuthModule } from './auth/auth.module';
 import { AdminsModule } from './admins/admins.module';
 import { AdminLogsModule } from './admin_logs/admin_logs.module';
@@ -19,25 +19,30 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { GuestUsersModule } from './guest_users/guest_users.module';
 import { LogsModule } from './logs/logs.module';
 import { SeedModule } from './seed/seed.module';
+import { CacheableMemory } from 'cacheable';
+import { createKeyv, Keyv } from '@keyv/redis'
 
 
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '../.env'}),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env'}),
        InquiriesModule, TourPackagesModule, 
       TicketsModule, BookingsModule, UsersModule, SeedModule, AdminsModule, 
       ProfilesModule, GuestUsersModule, LogsModule, AuthModule,
-      CacheModule.registerAsync({
-      useFactory: async () => ({
-        store: redisStore,
-        host: 'localhost',
-        port: 6379,
+      CacheModule.register({
+        ttl: 60,
+        max: 100,
+        isGlobal: true,
       }),
-    }),
     ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {
+      provide: 'APP_INTERCEPTOR',
+      useClass: CacheInterceptor,
+    }
+  ],
 })
 
 
