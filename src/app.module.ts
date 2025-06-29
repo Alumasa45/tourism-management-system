@@ -17,7 +17,7 @@ import { ConfigService } from '@nestjs/config';
 import { redisStore } from 'cache-manager-redis-store';
 import { ProfilesModule } from './profiles/profiles.module';
 import { GuestUsersModule } from './guest_users/guest_users.module';
-import { LogsModule } from './logs/logs.module';
+//import { LogsModule } from './logs/logs.module';
 import { SeedModule } from './seed/seed.module';
 import { CacheableMemory } from 'cacheable';
 import { createKeyv, Keyv } from '@keyv/redis'
@@ -29,7 +29,7 @@ import { createKeyv, Keyv } from '@keyv/redis'
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env'}),
        InquiriesModule, TourPackagesModule, 
       TicketsModule, BookingsModule, UsersModule, SeedModule, AdminsModule, 
-      ProfilesModule, GuestUsersModule, LogsModule, AuthModule,
+      ProfilesModule, GuestUsersModule, AuthModule,
       CacheModule.register({
         ttl: 60,
         max: 100,

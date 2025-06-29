@@ -31,7 +31,6 @@ export class TourPackage {
   start_date: Date;
 
   @Column({ type: 'date', nullable: false })
-  @Column({ type: 'date', nullable: false })
   end_date: Date;
 
   @OneToOne(() => Booking, (bookings) => bookings.package_id)

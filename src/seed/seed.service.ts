@@ -23,7 +23,7 @@ import { GuestUser } from 'src/guest_users/entities/guest_user.entity';
 @Injectable()
 export class SeedService {
   private readonly logger = new Logger(SeedService.name);
-  private readonly BATCH_SIZE = 500;
+  private readonly BATCH_SIZE = 50;
   private readonly TOTAL_RECORDS = 50;
 
   constructor(
@@ -46,12 +46,11 @@ export class SeedService {
   async seed(): Promise<void> {
     await this.seedUsers();
     await this.seedTourPackages();
+    await this.seedBookings();
     await this.seedTickets();
     await this.seedProfiles();
+    await this.seedGuestUsers();
     await this.seedInquiries();
-    //await this.seedGuestUsers();
-    await this.seedBookings();
-    //await this.seedAdmins();
     this.logger.log('Starting seeding...');
   }
 
@@ -99,12 +98,12 @@ export class SeedService {
       const tour_packages = Array.from({ length: this.BATCH_SIZE }, () =>
         this.tourPackageRepository.create({
           package_name: faker.company.catchPhrase(),
-          description: faker.lorem.paragraph(),
+          description: faker.lorem.paragraph().slice(0, 100),
           price: +faker.commerce.price({ min: 100, max: 15000 }),
           duration: faker.number.int({ min: 1, max: 14 }),
           available_slots: faker.number.int({ min: 1, max: 25 }),
-          start_date: faker.date.soon({ days: 60 }),
-          end_date: faker.date.soon({ days: 120 }),
+          start_date: faker.date.soon(),
+          end_date: faker.date.soon(),
         }),
       );
       await this.tourPackageRepository.save(tour_packages);
@@ -121,6 +120,11 @@ export class SeedService {
       select: ['package_id'],
     });
 
+    if (bookingIds.length === 0 || packageIds.length === 0) {
+      this.logger.error('No bookings or packages found for seeding tickets!');
+      return;
+    }
+
     for (let i = 0; i < this.TOTAL_RECORDS; i += this.BATCH_SIZE) {
       const ticketStatuses = Object.values(ticket_status);
       const tickets = Array.from({ length: this.BATCH_SIZE }, () => {
@@ -128,11 +132,11 @@ export class SeedService {
         const tour_package = faker.helpers.arrayElement(packageIds);
         return this.ticketRepository.create({
           booking_id: booking.booking_id,
-          issue_description: faker.lorem.paragraph(),
+          issue_description: faker.lorem.paragraph().slice(0, 100),
           ticket_status:
             ticketStatuses[Math.floor(Math.random() * ticketStatuses.length)],
-          created_at: faker.date.timeZone(),
-          resolved_at: faker.date.timeZone(),
+          created_at: faker.date.future(),
+          resolved_at: faker.date.future(),
         });
       });
       await this.ticketRepository.save(tickets);
@@ -153,10 +157,40 @@ export class SeedService {
         lastName: profile.last_name,
         provider: 'tourism.org',
       });
+      profile.password = faker.internet.password(),
       profile.role = UserUserRole.USER;
-      const savedProfile = await this.profileRepository.save(profile);
+      await this.profileRepository.save(profile);
     }
   }
+
+  private async seedGuestUsers() {
+  this.logger.log('Started seeding guest users...');
+  let guestIndex = 1;
+  for (let i = 0; i < this.TOTAL_RECORDS; i += this.BATCH_SIZE) {
+    const guestUsers = Array.from({ length: this.BATCH_SIZE }, () =>
+      this.guestUserRepository.create({
+        email: `guest${guestIndex}@gmail.com`,
+        first_name: faker.person.firstName(),
+        last_name: faker.person.lastName(),
+        phone_number: faker.phone.number(),
+      })
+    );
+    guestIndex += this.BATCH_SIZE;
+    try {
+      await this.guestUserRepository.save(guestUsers);
+      this.logger.log(
+        `Saved guest users batch ${i / this.BATCH_SIZE + 1} (${guestIndex - 1} guest users total)`
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to save guest users batch ${i / this.BATCH_SIZE + 1}`,
+        error,
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100)); // Optional: avoid DB overload
+  }
+  this.logger.log('😁Finished seeding all guest users!');
+}
 
   private async seedInquiries() {
     this.logger.log('Started Seeding inquiries...');
@@ -170,14 +204,15 @@ export class SeedService {
       const inquiries = Array.from({ length: this.BATCH_SIZE }, () => {
         const user = faker.helpers.arrayElement(userIds);
         const GuestUser = faker.helpers.arrayElement(GuestUserIds);
+        const isGuest = faker.datatype.boolean();
         return this.inquiryRepository.create({
-          //guest_id: GuestUser.guest_id,
+          guest_id: GuestUser.guest_id,
           user_id: user.User_id,
           inquiry_type: faker.lorem.text(),
-          message: faker.lorem.paragraph(),
+          message: faker.lorem.paragraph().slice(0, 500),
           status:
             inquiryStatuses[Math.floor(Math.random() * inquiryStatuses.length)],
-          created_at: faker.date.anytime(),
+          created_at: faker.date.future(),
         });
       });
       await this.inquiryRepository.save(inquiries);

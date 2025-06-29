@@ -4,7 +4,7 @@ import { Reflector } from "@nestjs/core";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Profile, UserRole } from "src/profiles/entities/profile.entity";
 import { Repository } from "typeorm";
-import { roles } from "../decorators/roles.decorator";
+import { Roles } from "../decorators/roles.decorator";
 
 
 
@@ -25,11 +25,22 @@ export class RolesGuard implements CanActivate {
             context.getClass,
         ]);
 
+        console.log('Required roles:', requiredRoles)
+
         if(!requiredRoles) {
+            console.log('No roles required, allowing access...');
             return true;
         }
         const request = context.switchToHttp().getRequest<UserRequest>();
-        const user = request.user;
+       const { user } = context.switchToHttp().getRequest();
+       console.log('👤 User from request:', user);
+       console.log('👤 User role:', user?.role);
+       console.log('👤 User role type:', typeof user?.role);
+
+       const hasRole = requiredRoles.some((role) => user?.role === role);
+       console.log('🎭 Has required role?', hasRole);
+       
+    
 
         if(!user) {
             return false;

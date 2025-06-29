@@ -1,3 +1,4 @@
+import { N } from '@faker-js/faker/dist/airline-BUL6NtOJ';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDate,
@@ -12,7 +13,7 @@ export class CreateGuestUserDto {
   @ApiProperty({ description: 'Unique guest Identifier.'})
     @IsNumber()
     @IsNotEmpty()
-    guest_id: Number;
+    guest_id: number;
 
     @ApiProperty({ description: 'guest user email.'})
     @IsEmail()

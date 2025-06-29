@@ -54,5 +54,8 @@ export class Inquiry {
   @JoinColumn({ name: 'user_id' })
   user: Relation<User>;
 
+  @ManyToOne(() => GuestUser, (guestUser: GuestUser) => guestUser.inquiries)
+  @JoinColumn({ name: 'guest_id' })
+  guestUser: Relation<GuestUser>;
 
 }

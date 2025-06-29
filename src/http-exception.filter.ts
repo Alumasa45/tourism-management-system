@@ -1,6 +1,6 @@
 import { Catch, HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
-import { LogsService } from './logs/logs.service';
+//import { LogsService } from './logs/logs.service';
 import { Request, Response } from 'express';
 
 interface MyResponseObj {
@@ -12,7 +12,7 @@ interface MyResponseObj {
 
 @Catch()
 export class AllExceptionsFilter extends BaseExceptionFilter {
-  private readonly logs = new LogsService();
+  //private readonly logs = new LogsService();
 
   private getClientIp(request: Request): string {
     const forwardedFor = request.headers['x-forwarded-for'];
@@ -53,6 +53,6 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
         ? myResponseObj.response
         : JSON.stringify(myResponseObj.response); 
     const entry = `Error: ${logMessage} - Path: ${request.url}`;
-    void this.logs.logToFile(entry, clientIp);
+    //void this.logs.logToFile(entry, clientIp);
   }
 }

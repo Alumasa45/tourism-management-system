@@ -16,7 +16,7 @@ import { Inquiry } from 'src/inquiries/entities/inquiry.entity';
 export class GuestUser {
   @ApiProperty({ description: 'Unique user identifier' })
   @PrimaryGeneratedColumn({ type: 'int' })
-  guest_id: Number;
+  guest_id: number;
 
   @ApiProperty({ description: 'guest user email address' })
   @Column({ type: 'varchar', nullable: false })
@@ -34,9 +34,9 @@ export class GuestUser {
   @Column({ type: 'varchar', nullable: false })
   phone_number: string;
 
-  @OneToOne(() => Profile, (profile: Profile) => profile.user)
-  profile: Relation<GuestUser>;
+  @OneToOne(() => Profile, (profile: Profile) => profile.guestUser)
+  profile: Relation<Profile>;
 
-  @OneToMany(() => Inquiry, (inquiry: Inquiry) => inquiry.user)
-  inquiries: Relation<GuestUser>;
+  @OneToMany(() => Inquiry, (inquiry: Inquiry) => inquiry.guestUser)
+  inquiries: Relation<Inquiry[]>;
 }

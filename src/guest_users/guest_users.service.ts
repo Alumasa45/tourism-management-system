@@ -12,8 +12,8 @@ export class GuestUsersService {
     private readonly guestUserRepository: Repository<GuestUser>
   ) {}
   async create(createGuestUserDto: CreateGuestUserDto): Promise<any> {
-    const { email, first_name, last_name, phone_number } = createGuestUserDto;
-    return GuestUser;
+    const guestUser = this.guestUserRepository.create(createGuestUserDto);
+    return this.guestUserRepository.save(guestUser)
   }
 
   async login(email: string): Promise<any> {

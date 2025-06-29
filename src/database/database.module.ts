@@ -22,7 +22,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
             password: configService.get<string>('DB_PASSWORD', 'aquinattaayo'),
             database: configService.get<string>(
               'DB_DATABASE',
-              'tourism_management',
+              'tourism-management',
             ),
             entities: [__dirname + '/../**/*.entity{.ts,.js}'],
             synchronize: configService.get<boolean>('DB_SYNC', true),

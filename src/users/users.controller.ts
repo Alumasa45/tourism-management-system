@@ -15,7 +15,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiForbiddenResponse  } from '@nestjs/swagger';
 import { AtGuard, RolesGuard } from 'src/auth/guards';
 import { User } from './entities/user.entity';
-import { roles } from 'src/auth/decorators';
+import { Roles } from 'src/auth/decorators';
 import { UserRole } from 'src/profiles/entities/profile.entity';
 import { Public } from 'src/auth/decorators/public.decorator';
 

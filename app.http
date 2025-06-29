@@ -1,0 +1,144 @@
+@localhost=http://localhost:3000
+@auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiYXF1aW5hdHRhQGdtYWlsLmNvbSIsInJvbGUiOnsiQURNSU4iOiJhZG1pbiIsIlVTRVIiOiJ1c2VyIiwiR1VFU1QiOiJndWVzdCJ9LCJpYXQiOjE3NTExOTM3NDYsImV4cCI6MTc1MTE5NzM0Nn0.OrQEaGTdQtP2LsfkBCl9IQCLvFYa9XdsqLgb-y0KFbA
+@admin_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiYXF1aW5hdHRhQGdtYWlsLmNvbSIsInJvbGUiOnsiQURNSU4iOiJhZG1pbiIsIlVTRVIiOiJ1c2VyIiwiR1VFU1QiOiJndWVzdCJ9LCJpYXQiOjE3NTExOTM3NDYsImV4cCI6MTc1MTE5NzM0Nn0.OrQEaGTdQtP2LsfkBCl9IQCLvFYa9XdsqLgb-y0KFbA
+@user_token=
+
+@package_token=
+
+####################users############
+###auth user.
+POST {{localhost}}/auth/signUp
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "email": "aquinatta@gmail.com",
+    "password": "deco"
+}
+
+### /users
+POST {{localhost}}/users/registration
+Content-Type: application/json
+
+{
+    "email": "aquinatta@gmail.com",
+    "password": "deco",
+    "first_name": "deco",
+    "last_name": "art",
+    "status": "Active",
+    "phone_number": "0777777777"
+}
+
+###get users.
+GET {{localhost}}/users
+Authorization: Bearer {{admin_token}}
+
+###get users by id.
+GET {{localhost}}/users/2
+Authorization: Bearer {{admin_token}}
+
+###update users
+PATCH {{localhost}}/users/3
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+    "status": "Active"
+}
+
+###delete users by id.
+DELETE {{localhost}}/users/3
+Authorization: Bearer {{admin_token}}
+
+###################guest users##############
+POST {{localhost}}/guest-users
+Content-Type: application/json
+
+{
+    "guest_id": 2,
+    "email": "guest1@gmail.com",
+    "first_name": "guest",
+    "last_name": "one",
+    "phone_number": "0111111111"
+}
+
+### get all guest users.
+GET {{localhost}}/guest-users
+Authorization: Bearer {{admin_token}}
+
+### get user by id.
+GET {{localhost}}/guest-users
+Authorization: Bearer {{admin_token}}
+
+### Delete user - by id.
+DELETE {{localhost}}/guest-users/1
+Authorization: Bearer {{admin_token}}
+
+########################## TOUR PACKAGES####################
+POST {{localhost}}/tour-packages
+Content-Type: application/json
+
+{
+    "package_name": "",
+    "description": "",
+    "price": ,
+    "duration": ,
+    "available_slots": ,
+    "start_date": ,
+    "end_date": 
+}
+
+### Get all tour packages.
+GET {{localhost}}/tour-packages
+
+### Get one tour package by id.
+GET {{localhost}}/tour-packages/1
+
+### Update tour-packages.
+PATCH {{localhost}}/tour-packages
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+    "package_name": "",
+    "description": "",
+    "price": ,
+    "duration": ,
+    "available_slots": ,
+    "start_date": ,
+    "end_date": ,
+}
+
+### Delete tour-packages by id.
+DELETE {{localhost}}/tour-packages/1
+Authorization: Bearer {{admin_token}}
+
+################################ BOOKINGS ###########
+POST {{localhost}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{package_token}}
+
+{
+    "package_id": ,
+    "booking_date": ,
+    "status": ""
+}
+
+### Get all bookings.
+GET {{localhost}}/bookings
+Authorization: Bearer {{admin_token}}
+
+### Get booking by id.
+GET {{localhost}}/bookings/1
+
+### Update booking by id.
+PATCH {{localhost}}/bookings/1
+Authorization: {{admin_token}}
+
+###Delete booking by id.
+DELETE {{localhost}}/bookings/1
+Authorization: {{admin_token}}
+
+#####################SEED############
+POST {{localhost}}/seed
+

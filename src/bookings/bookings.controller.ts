@@ -13,7 +13,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 //import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { roles } from '../auth/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
 import {
   ApiTags,
@@ -31,7 +31,7 @@ export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
   @Post()
-  @roles(UserRole.USER, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Create a new booking' })
   @ApiResponse({ status: 201, description: 'Booking created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -40,7 +40,7 @@ export class BookingsController {
   }
 
   @Get()
-  @roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Get all bookings' })
   @ApiResponse({ status: 200, description: 'Return all bookings' })
   findAll() {
@@ -48,7 +48,7 @@ export class BookingsController {
   }
 
   @Get(':id')
-  @roles(UserRole.USER, UserRole.ADMIN)
+  @Roles(UserRole.USER, UserRole.ADMIN)
   @ApiOperation({ summary: 'Get booking by ID' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Return the booking' })
@@ -58,7 +58,7 @@ export class BookingsController {
   }
 
   @Patch(':id')
-  @roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Update booking by ID' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Booking updated successfully' })
@@ -68,7 +68,7 @@ export class BookingsController {
   }
 
   @Delete(':id')
-  @roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Delete booking by ID' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Booking deleted successfully' })

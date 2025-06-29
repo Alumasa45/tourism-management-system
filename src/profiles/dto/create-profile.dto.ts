@@ -1,9 +1,9 @@
 import {
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 import { UserRole } from '../entities/profile.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -34,6 +34,6 @@ export class CreateProfileDto {
   })
   role: UserRole = UserRole.GUEST;
 
-  @IsUUID()
+  @IsNumber()
   userId: number;
 }

@@ -42,7 +42,7 @@ export class Booking {
   @JoinColumn({ name: 'package_id' })
   package: Relation<TourPackage>;
 
-  @ManyToOne(() => User, (user) => user.bookings)
+  @ManyToOne(() => User, (user) => user.bookings, { onDelete: 'CASCADE'})
   @JoinColumn({ name: 'user_id' })
   user: Relation<User>;
 }

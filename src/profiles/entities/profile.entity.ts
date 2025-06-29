@@ -9,6 +9,7 @@ import {
 import { User } from 'src/users/entities/user.entity';
 import { Admin } from 'src/admins/entities/admin.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { GuestUser } from 'src/guest_users/entities/guest_user.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -19,7 +20,7 @@ export enum UserRole {
 @Entity('profiles')
 export class Profile {
   @ApiProperty({ description: 'unique profile id' })
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn({type: 'int'})
   id: string;
 
   @Column('text')
@@ -32,7 +33,7 @@ export class Profile {
   email: string;
 
   @Column({ nullable: false })
-  password: Date;
+  password: String;
 
   @Column({ nullable: true, enum: UserRole, default: UserRole.GUEST })
   role: string;
@@ -43,6 +44,8 @@ export class Profile {
   @OneToOne(() => User, (user) => user.profile)
   user: Relation<User>;
 
+  @OneToOne(() => GuestUser, (guestUser: GuestUser) => guestUser.profile)
+  guestUser: Relation<GuestUser>;
   // @OneToOne(() => Admin, (admin) => admin.profile)
   // admin: Relation<Admin>;
 }
